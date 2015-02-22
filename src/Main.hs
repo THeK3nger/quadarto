@@ -3,12 +3,8 @@
 module Main where
 
 import           Codec.Picture
-import           Data.Int
-import           Data.Maybe
 import           Data.Word
-import           Debug.Trace
---import           Data.ByteString
---import           Data.ByteString.Char8 as BS8
+-- import           Debug.Trace
 
 -- LOAD IMAGE ------------------------------------------------------------------
 
@@ -85,7 +81,7 @@ wordIsNear a b threshold =
 -- | Check if colors in rect are are between a threshold respect to the average.
 -- | If true, the rect is "indivisible".
 isIndivisible :: Image PixelRGB8 -> Int -> Rect -> Bool
-isIndivisible _ t rect | trace ("isIndivisible:: " ++ show rect ++ " th: " ++ show t) False = undefined
+-- isIndivisible _ t rect | trace ("isIndivisible:: " ++ show rect ++ " th: " ++ show t) False = undefined
 isIndivisible img threshold rect =
     let
         isPixelInThreshold (PixelRGB8 r g b)
@@ -113,8 +109,8 @@ quadSplit rect@((x1,y1),(x2,y2)) =
 
 -- | Return a list of rect obtained by the quaddecomposition of the image over the given rect.
 quadDecomposition :: Image PixelRGB8 -> Int -> Rect -> [Rect]
-quadDecomposition _ _ rect |trace ("quadDecomposition:: " ++ show rect) False = undefined
-quadDecomposition img threshold rect@((x1,y1),(x2,y2))
+-- quadDecomposition _ _ rect |trace ("quadDecomposition:: " ++ show rect) False = undefined
+quadDecomposition img threshold rect
     | rectWidth rect <= 8 = [rect]
     | isIndivisible img threshold rect = [rect]
     | otherwise =  foldr ((++) . quadDecomposition img threshold) [] (quadSplit rect)
