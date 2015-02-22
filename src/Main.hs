@@ -4,9 +4,9 @@ module Main where
 
 import           Codec.Picture
 import           Data.Int
-import  Data.Maybe
-import Debug.Trace
-import Data.Word
+import           Data.Maybe
+import           Data.Word
+import           Debug.Trace
 --import           Data.ByteString
 --import           Data.ByteString.Char8 as BS8
 
