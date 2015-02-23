@@ -1,4 +1,4 @@
-# Quadarto
+# Quadarto [![Build Status](https://travis-ci.org/THeK3nger/quadarto.svg?branch=master)](https://travis-ci.org/THeK3nger/quadarto) [![Stories in Ready](https://badge.waffle.io/THeK3nger/quadarto.svg?label=ready&title=Ready)](http://waffle.io/THeK3nger/quadarto)
 
 ![Example](./images/example.png)
 
@@ -14,7 +14,6 @@ purpose and I'll try to be idiomatic as much as possible.
 There is still a lot of work to do on the algorithm. The software works but it
 is still heavily non optimized and non idiomatic. I think can be interesting to
 follow the various commits I'll do to see how the software evolve towards its
-final idiomatic Haskell version. :)
-
+final idiomatic Haskell version. :) 
 
   [1]: http://en.wikipedia.org/wiki/Quadtree
