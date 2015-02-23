@@ -22,23 +22,10 @@ extractImage  _                        = error "Invalid Format"
 type Coord = (Int,Int)
 type Rect = (Coord,Coord)
 
--- | Return all the coordinate in the rect.
-coordsInRect :: Rect -> [Coord]
--- coordsInRect rect | trace ("coordsInRect:: " ++ show rect) False = undefined
-coordsInRect ((x1,y1),(x2,y2)) = [ (x,y) | x <- [x1..x2], y <- [y1..y2] ]
-
--- | Sum a pixel in an accumulator tuple.
-sumPixels :: PixelRGB8 -> (Int, Int, Int) -> (Int, Int, Int)
-sumPixels (PixelRGB8 pr pg pb) (r,g,b)  = (r + fromIntegral pr,g + fromIntegral pg,b + fromIntegral pb)
-
 -- | Return all the pixels in the image inside the Rect
 pixelsInSquare :: Image PixelRGB8 -> Rect -> [PixelRGB8]
 -- pixelsInSquare _ rect | trace ("pixelsInSquare:: " ++ show rect) False = undefined
-pixelsInSquare img rect = [ pixelAt img x y | (x,y) <- coordsInRect rect]
-
--- | Return the average of n tuples of three ints.
-avgTuple :: Int -> (Int, Int, Int) -> (Int, Int, Int)
-avgTuple n (x,y,z) = (div x n, div y n, div z n)
+pixelsInSquare img ((x1,y1),(x2,y2)) = [ pixelAt img x y |  x <- [x1..x2], y <- [y1..y2]]
 
 -- | How many pixels are inside Rect?
 rectArea :: Rect -> Int
@@ -56,6 +43,11 @@ avgColor img rect =
     PixelRGB8  (fromIntegral avgRed) (fromIntegral avgGreen) (fromIntegral avgBlue)
     where
         (avgRed, avgGreen, avgBlue) = avgTuple (rectArea rect) $ foldr sumPixels (0,0,0) (pixelsInSquare img rect)
+        avgTuple :: Int -> (Int, Int, Int) -> (Int, Int, Int)
+        avgTuple n (x,y,z) = (div x n, div y n, div z n)
+        -- | Sum a pixel in an accumulator tuple.
+        sumPixels :: PixelRGB8 -> (Int, Int, Int) -> (Int, Int, Int)
+        sumPixels (PixelRGB8 pr pg pb) (r,g,b)  = (r + fromIntegral pr,g + fromIntegral pg,b + fromIntegral pb)
 
 -- | Return true iff the coordinate is in the rect.
 inRect :: Coord -> Rect -> Bool
@@ -115,21 +107,28 @@ quadDecomposition img threshold rect
     | isIndivisible img threshold rect = [rect]
     | otherwise =  foldr ((++) . quadDecomposition img threshold) [] (quadSplit rect)
 
+-- | Zip rectancles with their color average.
+zipRectsWithColors :: Image PixelRGB8 -> [Rect] -> [(Rect,PixelRGB8)]
+zipRectsWithColors img rects = [ (r, avgColor img r) | r <- rects ]
+
 --------------------------------------------------------------------------------
 
-pixelRenderer :: Image PixelRGB8 -> [Rect] -> Int -> Int -> PixelRGB8
+pixelRenderer :: Image PixelRGB8 -> [(Rect,PixelRGB8)] -> Int -> Int -> PixelRGB8
 -- pixelRenderer _ rects x y | trace ("pixelRenderer:: " ++ show rects ++ " " ++ show (x,y)) False = undefined
 pixelRenderer img rects x y =
     case theRect of
         [] -> pixelAt img x y
-        (r:_) -> if onRectBorder (x,y) r then PixelRGB8 0 0 0 else avgColor img r
+        ((r,c):_) -> if onRectBorder (x,y) r then PixelRGB8 0 0 0 else c
     where
-        theRect = filter (inRect (x,y)) rects
+        theRect = filter ((inRect (x,y)) . fst) rects
 
 -- | Test. Write a gradient image. Just for learning.
 imageCreator :: Image PixelRGB8 -> [Rect] -> String -> IO ()
 -- imageCreator _ rects _ | trace ("imageCreator:: " ++ show rects) False = undefined
-imageCreator img rects path = writePng path $ generateImage (pixelRenderer img rects) 512 512
+imageCreator img rects path = writePng path $ generateImage (pixelRenderer img (zipRectsWithColors img rects)) 512 512
+
+
+-- MAIN --- --------------------------------------------------------------------
 
 main :: IO ()
 main = do
@@ -137,7 +136,9 @@ main = do
   raw_image <- readImage "stag512.bmp"
   let image = extractImage raw_image
   print "OK"
-  print $ imageWidth image
+  -- print $ imageWidth image
   let rects = quadDecomposition image 50 ((0,0),(511,511))
-  print rects
+  -- print rects
   imageCreator image rects "stag-out.png"
+
+--------------------------------------------------------------------------------
