@@ -4,6 +4,8 @@ module Main where
 
 import           Codec.Picture
 import           Data.Word
+import           System.Environment
+import           System.Exit
 -- import           Debug.Trace
 
 -- LOAD IMAGE ------------------------------------------------------------------
@@ -125,20 +127,33 @@ pixelRenderer img rects x y =
 -- | Test. Write a gradient image. Just for learning.
 imageCreator :: Image PixelRGB8 -> [Rect] -> String -> IO ()
 -- imageCreator _ rects _ | trace ("imageCreator:: " ++ show rects) False = undefined
-imageCreator img rects path = writePng path $ generateImage (pixelRenderer img (zipRectsWithColors img rects)) 512 512
+imageCreator img rects path = writePng path $ generateImage (pixelRenderer img (zipRectsWithColors img rects)) (imageWidth img) (imageHeight img)
 
 
 -- MAIN --- --------------------------------------------------------------------
 
+parseArguments :: IO [String] -> IO (String, Int)
+parseArguments argsIO = do
+  args <- argsIO
+  case args of
+    (path:th:[])  -> return (path, read th)
+    _             -> usage
+
+usage :: IO a
+usage = do
+  progName <- getProgName
+  putStrLn ("Usage " ++ progName ++ " <input-file> <color_threshold>")
+  exitWith ExitSuccess
+
 main :: IO ()
 main = do
+  -- Parsing command line arguments
+  (inputPath, threshold) <- parseArguments getArgs
   print "Loading Image..."
-  raw_image <- readImage "stag512.bmp"
+  raw_image <- readImage inputPath
   let image = extractImage raw_image
   print "OK"
-  -- print $ imageWidth image
-  let rects = quadDecomposition image 50 ((0,0),(511,511))
-  -- print rects
+  let rects = quadDecomposition image threshold ((0,0),((imageWidth image)-1,(imageHeight image)-1))
   imageCreator image rects "stag-out.png"
 
 --------------------------------------------------------------------------------
