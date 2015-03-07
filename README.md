@@ -23,16 +23,16 @@ Quadarto can be installed directly from source:
 
 To execute the program, run the following command from the quadarto folder:
 
-    cabal run <file_name> <color_threshold>
+    cabal run <input_file> <color_threshold> [-o <output_file>]
 
 Where
 
- * `<file_name>` is the input file path.
+ * `<input_file>` is the input file path.
  * `<color_threshold>` is a value who indicates how similar two colors have to
  be in oder to be merged together. Usually values between 50 and 100 are good
  enough.
-
-For now, the software produces a `stag-out.png`. :P
+ * `<output_file>` is an optional output file path. If it is not specified the
+ output file will be `default.png`.
 
 ## Development
 
