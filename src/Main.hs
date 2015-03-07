@@ -132,28 +132,34 @@ imageCreator img rects path = writePng path $ generateImage (pixelRenderer img (
 
 -- MAIN --- --------------------------------------------------------------------
 
-parseArguments :: IO [String] -> IO (String, Int)
+parseArguments :: IO [String] -> IO (String, Int, Maybe String)
 parseArguments argsIO = do
   args <- argsIO
   case args of
-    (path:th:[])  -> return (path, read th)
-    _             -> usage
+    (path:th:[])           -> return (path, read th, Nothing)
+    (path:th:"-o":outPath:[]) -> return (path, read th, Just outPath)
+    _                      -> usage
 
 usage :: IO a
 usage = do
   progName <- getProgName
-  putStrLn ("Usage " ++ progName ++ " <input-file> <color_threshold>")
+  putStrLn ("Usage " ++ progName ++ " <input-file> <color_threshold> [-o <output_file>]")
   exitWith ExitSuccess
+
+outPathParsing :: Maybe String -> String
+outPathParsing Nothing  = "default.png"
+outPathParsing (Just out) = out
 
 main :: IO ()
 main = do
   -- Parsing command line arguments
-  (inputPath, threshold) <- parseArguments getArgs
+  (inputPath, threshold, maybeOut) <- parseArguments getArgs
+  let outPath = outPathParsing maybeOut
   print "Loading Image..."
   raw_image <- readImage inputPath
   let image = extractImage raw_image
   print "OK"
   let rects = quadDecomposition image threshold ((0,0),((imageWidth image)-1,(imageHeight image)-1))
-  imageCreator image rects "stag-out.png"
+  imageCreator image rects outPath
 
 --------------------------------------------------------------------------------
